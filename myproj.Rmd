@@ -1,0 +1,340 @@
+---
+title: "Reproducible data analysis project"
+author: "Aditya Salvi"
+date: "09/05/2021"
+output: html_document
+---
+
+# Introduction 
+
+**a)**  Basketball is one of the most famous sports in the world. It is played with a ball and a hoop. To score points players has to shoot the ball through the hoop. As this sports needs only basketball and a hoop it is one of the most easy going games. Basketball is a team sport which has two teams who compete against each other in a rectangular court. Each team has 5 players and can have upto 7 substitute players. There are 5 positions in each team and each position has its unique name.(3)\ 
+**Center** is mostly the tallest and the strongest player on the court. He usuall spends most of the time in the game close to the basket. Offensively they are not good shooters but they score from rebounds becasue of their height. Defensively, the main responsibility is defend the basket and rebound the basketball.(2)\
+**Point Guard** is also known as the 'floor general' or the 'one'. He is often one of the shortest player in the team and his main job is to setting up offense for the team. Point Guard is highly skilled at dribbling and passing. They are quick and often have high assist rate. Theyt are referred to as playmaker or the heart of the team.(3)\
+**Shooting Guard** is also known as off guard or 'two'. He is one of the shortest player on the team and generally plays offensive on the wings. Most of the shooting guards are prolific from the three-point range and long mid range. Shooting guard is considered to be a threat becasue he can score anywhere from the pitch. On the defensive end, the shooting guard is quick and able to avoid screen from the oppositions.\
+**Small Forward** is called as the 'swiss army knife of the team'. They can do everything on the court. They can play offensive and defensive. They are most versatile player in the team. They are big and athletic.\
+**Power Forward** is also called as the 'four' is usually the second tallest player on the court. He is strong and skilled. Offensively they are able to consistently hit three-point shot and defensively they size and strength to box out their opponents and securing rebounds.\
+**Key metrics in basketball :** Some of the key metrics in basketball we need to know are:\
+1) three-pointer - Three pointer is a shot when you shoot behind the three point line.\
+2) two-pointer - Two pointer is shot when you shoot insdie the two point line.\ 
+3) assist - Player who helps scoring points.\
+4) blocks - Blocking shots from your opponent. It can be a dunk,layup,three-pointer,two-pointer.\
+5) rebounds - Grabbing offensive or defensive rebounds so that the opponent cant score and we have higher chance of scoring.(4)
+
+**b)** The scenario given in this project is very interesting and fascinating. In this scenario we are a data analyst of famous franchise called Chicago Bulls who competes in NBA(National Basketball Academy). In 2018-19 season the team stood 27th out of 30 on the basis of win-loss record. The team's budget for next season which is 2019-20 season is $118 million. We are ranked as 26th out of 30 in terms of budget ranking. The team with the highest budget is Portland with $148 million. the team who won in the previous season was Milwaukee Bucks and their budget for next season is $131 million. 
+The task given by the general manager of Chicago  Bulls is to find the best five starting players, one from each positions. The players should be inside the budget. But we cant spend all the money on these 5 players because we also have other squad player to buy or look after. You can choose players who were already playing with Chicago Bulls in previous season. 
+
+**c)** The main *aim* of this project is to find the best five players one from each positions with the help of your data anaytics skillS. Keeping in mind the budget of the team. 
+
+**d)** The importance of this project is to learn to develop a reproducible data analysis project. And how fun it can be to study things related to sports. 
+
+
+# Reading and Cleaning raw data
+
+## Loading of packages
+```{r packages, message=FALSE}
+library(tidyverse)
+library(broom)
+library(ggplot2)
+library(corrplot)
+library(ggcorrplot)
+library(corrr)
+
+
+```
+
+## Data Source
+
+The data used in this document contains data from 2018-19 NBA season. It includes data of players, teams and salaries. 
+
+## Reading Data
+
+Reading 5 csv files which are 2018-19_nba_player-statistics.csv, 2018-19_nba_player-salaries.csv, 2019-20_nba_team-payroll.csv,  2018-19_nba_team-statistics_1.csv, 2018-19_nba_team-statistics_2.csv with the help of read.csv function. 
+
+Even though I have read all the files but I have used only two files which are 2018-19_nba_player-statistics.csv" and "2018-19_nba_player-salaries.csv".
+In the player statistics csv file there is information of Player and his personal stats and in player salaries csv file we have salaries of each player. The description of variables used in these dataset is mentioned below 
+https://uclearn.canberra.edu.au/courses/9531/pages/data-description-reproducible-data-analysis-project
+
+
+```{r reading_data}
+
+nba_stats <- read.csv("2018-19_nba_player-statistics.csv")
+nba_stats_1 <- read.csv("2018-19_nba_team-statistics_1.csv")
+nba_stats_2 <- read.csv("2018-19_nba_team-statistics_2.csv")
+nba_team_payroll <- read.csv("2019-20_nba_team-payroll.csv")
+nba_player_salaries <- read.csv("2018-19_nba_player-salaries.csv")
+
+```
+
+## Checking Summary of dataset
+
+With the help of summary function we get the summary of the data present in the data set. It gives us mean, median nut most important it gives us the number of NA's in each variable in the data set.
+
+```{r summary_of_dataset, message=FALSE}
+summary(nba_stats) #gives summary of nba_player_statistics
+summary(nba_stats_1) #gives summary of nba_team_statistics_1
+summary(nba_stats_2) #gives summary of nba_team_statistics_2
+summary(nba_player_salaries) #gives summary of nba_player_salaries
+summary(nba_team_payroll) #gives summary of nba_team_payroll
+
+```
+
+## Process for reading and cleaning the data 
+The data is read with the function called read.csv. It is from readr package. With the help of summary function we can get the number of NA's in each variable. By using na.omit() function we can omit the whole row which contains NA values. In our player statistics data set we had 47 NA values in X3P. variable. 15 in X2P. variable. 6 and 43 in eFG. and FT. variables respectively. In nba_statistic_1 file there are 3 columns which are filled with NA values. We removed it with the help of subset function. 
+```{r cleaning data}
+nba_stats <- na.omit(nba_stats) # omit NA values with the help of na.omit() function.
+nba_stats_1 = subset(nba_stats_1, select = -c(X,X.1,X.2)) #removed columns which contains NA values
+
+```
+
+# Exploratory Analysis 
+
+## a)Checking for errors in the dataset
+
+## Removing dupicate values
+In this we remove names which have occurred more than once and only keep the name which has played highest number of games among those duplicate values. 
+
+```{r removing_duplicate_names, message=FALSE}
+clean_nba_stats <- nba_stats %>% group_by(player_name) %>% slice(1) %>% ungroup()
+```
+
+# Joining player salaries data set with player stats.
+```{r}
+Joined_data<- clean_nba_stats %>% inner_join(nba_player_salaries)
+```
+
+
+## b) Checking the distribution of variables
+
+In this exploratory analysis we have considered explanatory variables as Assists, Field Goal%, Total Rebound, Blocks, Steals, Effective field goal% and Response variable is Points. 
+
+```{r Histogram for Field Goal Percentage}
+hist(clean_nba_stats$FG., col = "light blue")
+abline(v = mean(nba_stats$FG., na.rm = T),
+       col = "red",
+       lwd = 2)
+
+```
+
+```{r Histogram for Assists}
+hist(clean_nba_stats$AST, col = "light blue")
+abline(v = mean(nba_stats$AST, na.rm = T),
+       col = "red",
+       lwd = 2)
+
+```
+
+```{r Histogram for Total Rebounds}
+hist(clean_nba_stats$TRB, col = "light blue")
+abline(v = mean(nba_stats$TRB, na.rm = T),
+       col = "red",
+       lwd = 2)
+
+```
+
+```{r Histogram for Blocks}
+hist(clean_nba_stats$BLK, col = "light blue")
+abline(v = mean(nba_stats$BLK, na.rm = T),
+       col = "red",
+       lwd = 2)
+
+```
+
+```{r Histogram for Steals}
+hist(clean_nba_stats$STL, col = "light blue")
+abline(v = mean(nba_stats$STL, na.rm = T),
+       col = "red",
+       lwd = 2)
+
+```
+
+```{r Histogram for Effective Field Goal Percentage}
+hist(clean_nba_stats$eFG., col = "light blue")
+abline(v = mean(nba_stats$eFG., na.rm = T),
+       col = "red",
+       lwd = 2)
+
+```
+
+# c) To find the relationship between response variable and explanatory variable
+
+```{r Field goal percentage and Points}
+ggplot(clean_nba_stats, aes(x=FG., y=PTS)) + geom_point(alpha=0.5, color="purple") +
+  geom_smooth(method = "lm") #by using function ggplot from tidyverse package
+
+```
+
+```{r Assists and Points}
+
+ggplot(clean_nba_stats, aes(x=AST, y=PTS)) + geom_point(alpha=0.5, color="purple") +
+  geom_smooth(method = "lm")
+
+```
+
+```{r Total Rebounds and Points}
+ggplot(clean_nba_stats, aes(x=TRB, y=PTS)) + geom_point(alpha=0.5, color="purple") +
+  geom_smooth(method = "lm")
+```
+
+```{r Blocks and Points}
+ggplot(clean_nba_stats, aes(x=BLK, y=PTS)) + geom_point(alpha=0.5, color="purple") +
+  geom_smooth(method = "lm")
+```
+
+```{r Steals and Points}
+ggplot(clean_nba_stats, aes(x=STL, y=PTS)) + geom_point(alpha=0.5, color="purple") +
+  geom_smooth(method = "lm")
+
+```
+
+```{r Effective Field Goal Percentage}
+ggplot(clean_nba_stats, aes(x=eFG., y=PTS)) + geom_point(alpha=0.5, color="purple") +
+  geom_smooth(method = "lm")
+
+```
+# Data Modelling and Results
+
+## Finding correlations
+ 
+ Correlations are used to find the relationship between the variables. If that variables are correlated to each other the correlation coefficient is close to 1 or -1. 
+```{r}
+new_data <- subset(clean_nba_stats, select = -c(player_name:G,GS,MP:FGA,X3P:X2P.,FT:DRB,TOV:PTS))
+new_data.cor <- cor(new_data)
+new_data.cor= cor(new_data, method = c("spearman"))
+ggcorrplot(new_data.cor,outline.col = "white",ggtheme = ggplot2::theme_gray,
+           colors = c("#6D9EC1", "white", "#E46726"),lab = TRUE)
+
+#dropping Assist and Steal because of high correlation which in their case is 0.9
+
+```
+
+
+## Creating Multi linear Regression 
+We use multi linear regression to create a metric to having the best player. With Response variable is Points and other are explanatory variables. 
+```{r}
+new_data <- subset(clean_nba_stats, select = -c(player_name:G,GS,MP:FGA,X3P:X2P.,FT:DRB,AST,STL,TOV:PF)) #dropping asssists and steal variable
+
+fit <- lm(PTS ~ FG.+ BLK + TRB + eFG.,
+          data = new_data) #Multi linear model
+tidy(fit, conf.int = TRUE)
+
+#Our intercept is 26.42 that mean when FG., BLK, TRB, eFG. is 0 then our points is 26.42
+
+```
+## Checking  for Assumptions
+
+## Independence
+ Independence test helps us to determine if the linear regression assumption meets our independence of observations.
+ 
+```{r}
+car::durbinWatsonTest(fit)
+#There are no independence of observations.
+#Our result is 2.02 which is good.
+```
+
+## Outliers
+
+It helps us to check if there are any outliers. 
+```{r}
+new_residual <- rstandard(fit)
+points <- 1:length(new_residual)
+
+ggplot(data = NULL, aes(x = points, y = new_residual)) +
+  geom_point() +
+  ylim(c(-4,4)) +
+  geom_hline(yintercept = c(-3, 3), colour = "blue", linetype = "dashed")
+
+#there are some outliers near 3 and -3 mark.
+```
+
+## Prediction
+
+Predict function is used to get the expected values based on the observed values.
+```{r}
+head(predict(fit))
+```
+
+## Multicollinearity and Linearity
+```{r}
+car::vif(fit) #to check the if there is multicollinearity between variables
+#If the vif value is less than 5 there is less multicollinearity.
+
+car::avPlots(fit) #to check the linearity.
+pairs(formula = ~FG. + BLK + TRB + eFG., data = new_data)
+
+#As you can see from the graph that there are some linear non linear patterns. So thats why we can use different model which will be more efficient to our data. 
+
+
+```
+
+## For Centre Position
+
+```{r}
+best_centre_player <- Joined_data %>% filter(Pos == 'C' | Pos == 'C-PF' | Pos == 'PF-C')
+best_centre_player<- best_centre_player %>% filter(GS > mean(GS))
+summary(best_centre_player)
+best_centre_player <- best_centre_player %>% filter(TRB > 620,BLK > 90,PTS >1100) 
+best_centre_player
+```
+
+## for Point Guard
+```{r}
+best_point_guard<- Joined_data %>% filter(Pos == 'PG')
+best_point_guard<- best_point_guard %>% filter(GS > mean(GS))
+summary(best_point_guard)
+best_point_guard <- best_point_guard %>% filter(X2P. > 0.49,AST > 400,STL > 80)
+best_point_guard
+```
+
+## to select shooting guard
+```{r}
+best_shooting_guard<- Joined_data %>% filter(Pos == 'SG' | Pos == 'SF-SG' | Pos == 'SG-PF' | Pos == 'SG-SF')
+best_shooting_guard<- best_shooting_guard %>% filter(GS > mean(GS))
+summary(best_shooting_guard)
+best_shooting_guard <- best_shooting_guard %>% filter(FG. > 0.43,eFG. > 0.524,AST > 200,PTS >1000)
+best_shooting_guard
+```
+
+## to select small forward
+```{r}
+best_small_forward<-Joined_data %>% filter(Pos == 'SF' | Pos == 'PF-SF' | Pos == 'SF-SG' | Pos == 'SG-SF')
+best_small_forward<- best_small_forward %>% filter(GS > mean(GS))
+summary(best_small_forward)
+best_small_forward <- best_small_forward %>% filter(X3P.> 0.36,FT. > 0.76,DRB> 260)#,PTS >900)
+best_small_forward
+```
+
+## to select power forward
+```{r}
+best_power_forward<- Joined_data %>% filter(Pos == 'PF' | Pos == 'PF-SF' | Pos == 'SG-PF' | Pos == 'C-PF' | Pos =='PF-C')
+best_power_forward<- best_power_forward %>% filter(GS > mean(GS))
+summary(best_power_forward)
+best_power_forward <- best_power_forward %>% filter(FG.> 0.46,TRB > 430,BLK> 42)
+best_power_forward
+
+```
+
+## Player Reccomendation
+
+After going through all the data analytics I finally got my best five players, one for each position. I decided to have 80 million budget for these 5 players. Lets go through each position one by one:\
+**1) Center :** For center position I picked out best 2 players according to me which were Andre Drummond and Karl-Anthony Towns. Both of these players had similar statistics but I selected Karl-Anthony Towns becasue of his price which is 7.8 million compared to Andre's 25mil. As both have almost same statistics, but 2 things stand out for Kar-Anthony Towns were his age and his salary.\
+**2) Point Guard :** Choosing point guard was one of the toughest job. Because I think its the most important position and also he is also heart of team. Everything runs through point guard. So there was only one player according to statistics which proved out best from the rest was James Harden. He scored 2818 points which was highest in the league. He was one of the top assists in the league. Thats what you want from your best player scoring and running the game. He will cost us 30.5million. But he is worth it.\
+**3) Shooting Guard :** Shooting guard is the second fiddle to point guard and they must be good in shooting from anywhere on the court. And the player who matches this profile was Devin Booker. He is 22 years old, good in assists, field goals and in steals. He will cost us only 3.3 million.\
+**4) Small Forward :** For choosing small forward we had to chose a player who is good both offensive and defensive. Who is good in scoring and also blocking the attack.Danilo Gallinari and Kawhi Leonard are the two players shortisted. Both cost 21mil and 23mil respectively. Both are good in defence and in attack. So I think Danilo Gallinari is good only because he is 2mil cheaper than Kawhi Leonard.\
+**5) Power Forward "** The player I would recommend is Giannis Antetokounmpo. He can score from anywhere. His effective and field goal percentage is one of the best. He is good in defence. And the best part is 24 years old young and has very bright future. His salary is 24mil.\
+The players I will recommend are **Karl-Anthony Towns**, **James Harden**, **Devin Booke**, **Danilo Gallinari** and **Giannis Antetokounmpo**. They all will cost us roughly about **88million**. And if we have to build a winning team then I would recommend these players. 
+
+## Summary
+
+This project was challenging but fascinating at the same time. The key points were learning things regarding cleaning data, transforming data, data visualisation and how to develop a reproducible data. How visualisation of data makes it easy to study the statistical part of the project. Findings such as linear modelling and how to use it to find the best players was key. Limitations such as fullfilling every assumption is difficult and for robust data we could use different data modelling techniques.
+
+## References 
+
+1. Basketball positions - Wikipedia [Internet]. En.wikipedia.org. 2021 [cited 9 May 2021]. Available from: https://en.wikipedia.org/wiki/Basketball_positions
+
+2. &#8594; H, &#8594; B, &#8594; C, (explained) B. Basketball Positions: Key Roles and Responsibilities (explained) [Internet]. Basketball For Coaches. 2021 [cited 9 May 2021]. Available from: https://www.basketballforcoaches.com/basketball-positions/
+
+3. Basketball: Learn all about the sport basketball [Internet]. Ducksters.com. 2021 [cited 9 May 2021]. Available from: https://www.ducksters.com/sports/basketball.php
+
+4. Page B, Page B. Glossary | Basketball-Reference.com [Internet]. Basketball-Reference.com. 2021 [cited 10 May 2021]. Available from: https://www.basketball-reference.com/about/glossary.html#:~:text=eFG%25%20%2D%20Effective%20Field%20Goal%20Percentage,for%2010%20with%200%20threes.
+
+
